@@ -12,13 +12,11 @@ fn setup_polars_display(max_rows: usize) {
         std::env::set_var("POLARS_FMT_TABLE_HIDE_DATAFRAME_SHAPE_INFORMATION", "1");
         std::env::set_var("POLARS_FMT_MAX_ROWS", max_rows.to_string());
 
-        // Default: show all columns. If terminal is too narrow (<120), cap at 15.
-        let cols = terminal_width().unwrap_or(usize::MAX);
-        if cols < 120 {
-            std::env::set_var("POLARS_FMT_MAX_COLS", "15");
-        } else {
-            std::env::set_var("POLARS_FMT_MAX_COLS", "-1");
-        }
+        let width = terminal_width().unwrap_or(120);
+        std::env::set_var("POLARS_TABLE_WIDTH", width.to_string());
+        // Each column ~15 chars wide; cap by physical terminal width
+        let max_cols = width / 15;
+        std::env::set_var("POLARS_FMT_MAX_COLS", max_cols.to_string());
     }
 }
 

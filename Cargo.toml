@@ -8,3 +8,4 @@ description = "CLI tool to preview Arrow IPC, IPC Stream, and Parquet files"
 polars = { version = "0.53", features = ["ipc", "ipc_streaming", "parquet", "lazy", "diagonal_concat"] }
 clap = { version = "4.6", features = ["derive"] }
 glob = "0.3"
+terminal_size = "0.4"

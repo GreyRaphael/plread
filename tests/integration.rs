@@ -19,9 +19,7 @@ fn test_ipc_subcommand_help() {
     let output = plread_exe().args(["ipc", "--help"]).output().unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
-    assert!(stdout.contains("--head"));
-    assert!(stdout.contains("--tail"));
-    assert!(stdout.contains("--all-columns"));
+    assert!(stdout.contains("--max-rows"));
 }
 
 #[test]

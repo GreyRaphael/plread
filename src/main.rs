@@ -10,9 +10,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     let (df, args) = match &cli.command {
-        Format::Ipc(args) => {
-            (reader::ipc::read_ipc(&args.pattern)?, args)
-        }
+        Format::Ipc(args) => (reader::ipc::read_ipc(&args.pattern)?, args),
         Format::IpcStream(args) => {
             (reader::ipc_stream::read_ipc_stream(&args.pattern)?, args)
         }
@@ -22,10 +20,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let opts = DisplayOptions {
-        head: args.head,
-        tail: args.tail,
-        all_columns: args.all_columns,
-        width: args.width,
+        max_rows: args.max_rows,
     };
 
     if df.height() == 0 {

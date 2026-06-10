@@ -22,19 +22,7 @@ pub struct CommonArgs {
     /// File path pattern (supports glob, e.g. "path/*.ipc")
     pub pattern: String,
 
-    /// Number of head rows to display
-    #[arg(long, default_value_t = 5)]
-    pub head: usize,
-
-    /// Number of tail rows to display
-    #[arg(long, default_value_t = 5)]
-    pub tail: usize,
-
-    /// Show all columns (disable truncation)
-    #[arg(long)]
-    pub all_columns: bool,
-
-    /// Number of columns to show on each side when truncated
+    /// Maximum number of rows to display (head + tail combined)
     #[arg(long, default_value_t = 10)]
-    pub width: usize,
+    pub max_rows: usize,
 }

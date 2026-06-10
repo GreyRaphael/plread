@@ -7,15 +7,19 @@ pub struct DisplayOptions {
     pub width: usize,
 }
 
-/// Override polars' automatic terminal-width truncation.
-/// We handle column truncation ourselves; polars shouldn't interfere.
-fn set_polars_table_width() {
+/// Disable polars' own column/row truncation so our logic takes full control.
+fn disable_polars_truncation() {
+    // Prevent polars Display from truncating columns based on terminal width
     // SAFETY: single-threaded CLI startup, no concurrent env access
-    unsafe { std::env::set_var("POLARS_TABLE_WIDTH", "10000") };
+    unsafe {
+        std::env::set_var("POLARS_FMT_MAX_COLS", "10000");
+        std::env::set_var("POLARS_FMT_MAX_ROWS", "-1");
+        std::env::set_var("POLARS_TABLE_WIDTH", "10000");
+    }
 }
 
 pub fn display_df(df: &DataFrame, opts: &DisplayOptions) {
-    set_polars_table_width();
+    disable_polars_truncation();
 
     let total_rows = df.height();
     let total_cols = df.width();

@@ -12,9 +12,8 @@ fn disable_polars_truncation() {
     // Prevent polars Display from truncating columns based on terminal width
     // SAFETY: single-threaded CLI startup, no concurrent env access
     unsafe {
-        std::env::set_var("POLARS_FMT_MAX_COLS", "10000");
-        std::env::set_var("POLARS_FMT_MAX_ROWS", "-1");
-        std::env::set_var("POLARS_TABLE_WIDTH", "10000");
+        std::env::set_var("POLARS_FMT_MAX_COLS", "-1");
+        std::env::set_var("POLARS_FMT_TABLE_HIDE_DATAFRAME_SHAPE_INFORMATION", "1");
     }
 }
 
@@ -30,10 +29,7 @@ pub fn display_df(df: &DataFrame, opts: &DisplayOptions) {
 
     // Column truncation (our logic, not polars')
     let (show_df, col_msg) = if !opts.all_columns && total_cols > opts.width * 2 {
-        let left: Vec<&str> = col_names[..opts.width]
-            .iter()
-            .map(|s| s.as_ref())
-            .collect();
+        let left: Vec<&str> = col_names[..opts.width].iter().map(|s| s.as_ref()).collect();
         let right: Vec<&str> = col_names[total_cols - opts.width..]
             .iter()
             .map(|s| s.as_ref())
@@ -55,19 +51,6 @@ pub fn display_df(df: &DataFrame, opts: &DisplayOptions) {
     if let Some(msg) = col_msg {
         println!("{}", msg);
     }
-    println!();
-
-    // Row truncation
-    let head_n = opts.head.min(total_rows);
-    let tail_n = opts.tail.min(total_rows);
-    let needs_ellipsis = total_rows > head_n + tail_n;
-
     // Head
-    println!("{}", show_df.head(Some(head_n)));
-
-    if needs_ellipsis {
-        let hidden = total_rows - head_n - tail_n;
-        println!("... ({} rows omitted) ...\n", hidden);
-        println!("{}", show_df.tail(Some(tail_n)));
-    }
+    println!("{}", show_df);
 }

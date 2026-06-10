@@ -6,7 +6,8 @@ pub struct DisplayOptions {
 }
 
 /// Configure polars env vars before printing a DataFrame.
-fn setup_polars_display(max_rows: usize) {
+/// Returns (terminal_width, max_cols) for display purposes.
+fn setup_polars_display(max_rows: usize) -> (usize, usize) {
     // SAFETY: single-threaded CLI startup, no concurrent env access
     unsafe {
         std::env::set_var("POLARS_FMT_TABLE_HIDE_DATAFRAME_SHAPE_INFORMATION", "1");
@@ -17,6 +18,7 @@ fn setup_polars_display(max_rows: usize) {
         // Each column ~15 chars wide; cap by physical terminal width
         let max_cols = width / 15;
         std::env::set_var("POLARS_FMT_MAX_COLS", max_cols.to_string());
+        (width, max_cols)
     }
 }
 
@@ -25,11 +27,14 @@ fn terminal_width() -> Option<usize> {
 }
 
 pub fn display_df(df: &DataFrame, opts: &DisplayOptions) {
-    setup_polars_display(opts.max_rows);
+    let (term_width, max_cols) = setup_polars_display(opts.max_rows);
 
     let total_rows = df.height();
     let total_cols = df.width();
 
-    println!("Shape: {} rows x {} columns\n", total_rows, total_cols);
+    println!(
+        "Shape: {} rows x {} columns (terminal: {}w, display limit: {} cols)",
+        total_rows, total_cols, term_width, max_cols
+    );
     println!("{}", df);
 }

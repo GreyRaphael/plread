@@ -7,7 +7,16 @@ pub struct DisplayOptions {
     pub width: usize,
 }
 
+/// Override polars' automatic terminal-width truncation.
+/// We handle column truncation ourselves; polars shouldn't interfere.
+fn set_polars_table_width() {
+    // SAFETY: single-threaded CLI startup, no concurrent env access
+    unsafe { std::env::set_var("POLARS_TABLE_WIDTH", "10000") };
+}
+
 pub fn display_df(df: &DataFrame, opts: &DisplayOptions) {
+    set_polars_table_width();
+
     let total_rows = df.height();
     let total_cols = df.width();
     let col_names = df.get_column_names();
@@ -15,9 +24,12 @@ pub fn display_df(df: &DataFrame, opts: &DisplayOptions) {
     // Header
     println!("Shape: {} rows x {} columns", total_rows, total_cols);
 
-    // Column truncation
+    // Column truncation (our logic, not polars')
     let (show_df, col_msg) = if !opts.all_columns && total_cols > opts.width * 2 {
-        let left: Vec<&str> = col_names[..opts.width].iter().map(|s| s.as_ref()).collect();
+        let left: Vec<&str> = col_names[..opts.width]
+            .iter()
+            .map(|s| s.as_ref())
+            .collect();
         let right: Vec<&str> = col_names[total_cols - opts.width..]
             .iter()
             .map(|s| s.as_ref())

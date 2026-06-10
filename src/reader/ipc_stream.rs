@@ -18,24 +18,17 @@ fn expand_glob(pattern: &str) -> Result<Vec<PathBuf>, String> {
 
 /// Read IPC Stream files (eager, manual glob)
 pub fn read_ipc_stream(pattern: &str) -> PolarsResult<DataFrame> {
-    let paths =
-        expand_glob(pattern).map_err(|e| PolarsError::ComputeError(e.into()))?;
+    let paths = expand_glob(pattern).map_err(|e| PolarsError::ComputeError(e.into()))?;
 
     let dfs: Vec<DataFrame> = paths
         .iter()
         .map(|p| {
             let file = File::open(p).map_err(|e| {
-                PolarsError::ComputeError(
-                    format!("Cannot open {:?}: {}", p, e).into(),
-                )
+                PolarsError::ComputeError(format!("Cannot open {:?}: {}", p, e).into())
             })?;
             IpcStreamReader::new(BufReader::new(file)).finish()
         })
         .collect::<PolarsResult<Vec<_>>>()?;
 
-    if dfs.len() == 1 {
-        Ok(dfs.into_iter().next().unwrap())
-    } else {
-        polars::functions::concat_df_diagonal(&dfs)
-    }
+    polars::functions::concat_df_diagonal(&dfs)
 }
